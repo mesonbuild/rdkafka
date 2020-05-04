@@ -7,7 +7,7 @@ hdr = files(
 	'src/rdkafka.h',
 	'src-cpp/rdkafkacpp.h',
 )
-subdir('meson-include/librdkafka') # hack for header include paths
+subdir('include-workaround-meson/librdkafka') # hack for header include paths
 srcc = [
     'src/crc32c.c',
     'src/rdaddr.c',
@@ -168,7 +168,7 @@ configure_file(configuration: conf,
 rdkafka = library('rdkafka', srcc, install: true, dependencies: [threads, dl, zlib, zstd, sasl, ssl, lz4])
 rdkafka_dep = declare_dependency(
 	link_with: rdkafka,
-	include_directories: include_directories('meson-include'),
+	include_directories: include_directories('include-workaround-meson'),
 )
 pkgconfig.generate(rdkafka,
 	subdirs: 'rdkafka',
@@ -180,7 +180,7 @@ pkgconfig.generate(rdkafka,
 rdkafkapp = library('rdkafka++', srccpp, install: true, dependencies: rdkafka_dep)
 rdkafkapp_dep = declare_dependency(
 	link_with: rdkafkapp,
-	include_directories: include_directories('meson-include'),
+	include_directories: include_directories('include-workaround-meson'),
 )
 pkgconfig.generate(rdkafkapp,
 	subdirs: 'rdkafka',
