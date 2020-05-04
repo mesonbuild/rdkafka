@@ -7,7 +7,7 @@ hdr = files(
 	'src/rdkafka.h',
 	'src-cpp/rdkafkacpp.h',
 )
-subdir('include-workaround-meson/librdkafka') # hack for header include paths
+subdir('include-workaround-meson/librdkafka')
 srcc = [
     'src/crc32c.c',
     'src/rdaddr.c',
@@ -101,7 +101,7 @@ regex = cc.compiles('''
 zlib = dependency('zlib', required: get_option('WITH_ZLIB'), static: get_option('default_library') == 'static', fallback: ['zlib', 'zlib_dep'])
 zstd = dependency('libzstd', required: get_option('WITH_ZSTD'), static: get_option('default_library') == 'static', fallback: ['zstd', 'zstd_dep'])
 lz4 = dependency('liblz4', required: get_option('ENABLE_LZ4_EXT'), static: get_option('default_library') == 'static', fallback: ['lz4', 'lz4_dep'])
-sasl = dependency('libsasl2', required: get_option('WITH_SASL'), static: get_option('default_library') == 'static')
+sasl = dependency('libsasl2', required: get_option('WITH_SASL'), static: get_option('default_library') == 'static') # TODO: make SASL usable without libsasl2 on windows 
 ssl = dependency('openssl', required: get_option('WITH_SSL'), static: get_option('default_library') == 'static')
 dl = cc.find_library('dl', required : get_option('WITH_LIBDL'))
 threads = dependency('threads')
@@ -125,23 +125,28 @@ conf.set('CMAKE_SHARED_LIBRARY_SUFFIX', 'so')
 built_with = 'meson ' + cc.get_id() + ' ' + cpp.get_id()
 if ssl.found()
 	built_with += ' SSL'
+	srcc += 'src/rdkafka_ssl.c'
 endif
-#if 'WITH_HDRHISTOGRAM'
-#  # list(['APPEND', 'sources', 'rdhdrhistogram.c'])
-#endif
 if dl.found()
 	srcc += ['src/rddl.c', 'src/rdkafka_plugin.c']
 	built_with += ' LIBDL PLUGINS'
 endif
-#elif 'WITH_SASL_CYRUS'
-#  # list(['APPEND', 'sources', 'rdkafka_sasl_cyrus.c'])
-#endif
-#if 'WITH_SASL_SCRAM'
-#  # list(['APPEND', 'sources', 'rdkafka_sasl_scram.c'])
-#endif
-#if 'WITH_SASL_OAUTHBEARER'
-#  # list(['APPEND', 'sources', 'rdkafka_sasl_oauthbearer.c'])
-#endif
+if sasl.found()
+  if host_machine.system() == 'windows'
+	srcc += 'src/rdkafka_sasl_win32.c'
+  else
+	srcc += 'src/rdkafka_sasl_cyrus.c'
+	conf.set10('WITH_SASL_CYRUS', true)
+	built_with += ' SASL_CYRUS'
+  endif
+  if ssl.found()
+	srcc += [ 'src/rdkafka_sasl_scram.c', 'src/rdkafka_sasl_oauthbearer.c']
+	conf.set10('WITH_SASL_SCRAM', true)
+	conf.set10('WITH_SASL_OAUTHBEARER', true)
+	built_with += ' SASL_SCRAM SASL_OAUTHBEARER'
+  endif
+endif
+
 if zlib.found()
 	srcc += 'src/rdgz.c'
 	built_with += ' ZLIB'
