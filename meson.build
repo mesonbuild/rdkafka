@@ -1,4 +1,4 @@
-project('rdkafka', 'c', 'cpp', version: '1.4.0')
+project('rdkafka', 'c', 'cpp', version: '1.4.4')
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 pkgconfig = import('pkgconfig')
