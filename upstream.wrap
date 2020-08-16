@@ -1,0 +1,6 @@
+[wrap-file]
+directory = librdkafka-1.4.4
+
+source_url = https://github.com/edenhill/librdkafka/archive/v1.4.4.tar.gz
+source_filename = rdkafka-1.4.4.tgz
+source_hash = 0984ffbe17b9e04599fb9eceb16cfa189f525a042bef02474cd1bbfe1ea68416
