@@ -4,20 +4,28 @@ else
   win_sources = []
 endif
 
-inc = include_directories('../src', '../src-cpp')
-
-executable('producer', ['producer.c'] + win_sources, dependencies: rdkafka_dep, include_directories: inc)
-executable('producer_cpp', ['producer.cpp'] + win_sources, dependencies: rdkafkapp_dep, include_directories: inc)
-executable('consumer', ['consumer.c'] + win_sources, dependencies: rdkafka_dep, include_directories: inc)
-executable('rdkafka_performance', ['rdkafka_performance.c'] + win_sources, dependencies: rdkafka_dep, include_directories: inc)
-executable('rdkafka_example_cpp', ['rdkafka_example.cpp'] + win_sources, dependencies: rdkafkapp_dep, include_directories: inc)
-executable('rdkafka_complex_consumer_example_cpp', ['rdkafka_complex_consumer_example.cpp'] + win_sources, dependencies: rdkafkapp_dep, include_directories: inc)
-executable('openssl_engine_example_cpp', ['openssl_engine_example.cpp'] + win_sources, dependencies: rdkafkapp_dep, include_directories: inc)
-
-# The targets below has Unix include dirs and do not compile on Windows.
+examples = [
+  {'e': 'producer', 's': 'producer.c'},
+  {'e': 'producer_cpp', 's': 'producer.cpp'},
+  {'e': 'consumer', 's': 'consumer.c'},
+  {'e': 'rdkafka_performance', 's': 'rdkafka_performance.c'},
+  {'e': 'rdkafka_example_cpp', 's': 'rdkafka_example.cpp'},
+  {'e': 'rdkafka_complex_consumer_example_cpp', 's': 'rdkafka_complex_consumer_example.cpp'},
+  {'e': 'openssl_engine_example_cpp', 's': 'openssl_engine_example.cpp'},
+]
 if host_machine.system() != 'windows'
-  executable('rdkafka_example', ['rdkafka_example.c'] + win_sources, dependencies: rdkafka_dep, include_directories: inc)
-  executable('rdkafka_complex_consumer_example', ['rdkafka_complex_consumer_example.c'] + win_sources, dependencies: rdkafka_dep, include_directories: inc)
-  executable('kafkatest_verifiable_client', ['kafkatest_verifiable_client.cpp'] + win_sources, dependencies: rdkafkapp_dep, include_directories: inc)
+  examples += [
+    {'e': 'rdkafka_example', 's': 'rdkafka_example.c'},
+    {'e': 'rdkafka_complex_consumer_example', 's': 'rdkafka_complex_consumer_example.c'},
+    {'e': 'kafkatest_verifiable_client', 's': 'kafkatest_verifiable_client.cpp'},
+  ]
 endif
+
+foreach ex: examples
+  executable(ex['e'], [ex['s']] + win_sources,
+    dependencies: rdkafka_dep,
+    include_directories: include_directories('../src', '../src-cpp'),
+    build_by_default: false,
+  )
+endforeach
 

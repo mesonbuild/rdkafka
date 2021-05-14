@@ -129,13 +129,21 @@ else
   sources += files('sockem.c', 'sockem_ctrl.c')
 endif
 
-e = executable('test-runner', sources, dependencies: rdkafkapp_dep, include_directories: ['../src', '../src-cpp', 'include-workaround-meson'], export_dynamic: true)
-# Can't actually declare the tests, because the wrap audit would attemt to execute them. Without the necessary kafka running.
-# To add insult to injury, The run-tests.sh that librdkafka ships requires an in-source build.
-
-# Well, you can still cd build/tests && ln -sf libinterceptor_test.so interceptor_test/iterceptortestso && ./test-runner -p5 -l manually.
-
 # Running test 0066 requires that $PWD/interceptor_test/iterceptortestso links to the build output of this subdir:
 if host_machine.system() != 'windows' and host_machine.system() != 'apple'
   subdir('interceptor_test')
 endif
+
+e = executable('test-runner', sources,
+  dependencies: rdkafkapp_dep,
+  include_directories: ['../src', '../src-cpp', 'include-workaround-meson'],
+  export_dynamic: true,
+  build_by_default: false,
+)
+# Can't actually declare the tests, because the wrap audit would attemt to execute them. Without the necessary kafka running.
+# You can still
+#   ninja -Cbuild tests/interceptor_test/libinterceptor_test.so tests/test-runner \
+#   && cd build/tests \
+#   && ln -sf libinterceptor_test.so interceptor_test/interceptor_testso \
+#   && ./test-runner -p5 -l
+# manually.
